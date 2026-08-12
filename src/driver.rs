@@ -642,6 +642,9 @@ mod tests {
             "profile": { "host": "qdrant.local", "password": "key_secret" }
         }))
         .unwrap();
-        assert_eq!(config.redact("rejected key key_secret"), "rejected key ****");
+        assert_eq!(
+            config.redact("rejected key key_secret"),
+            "rejected key ****"
+        );
     }
 }
