@@ -3,7 +3,7 @@
   "manifestVersion": 1,
   "id": "irodori.qdrant",
   "name": "Qdrant Connector",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "publisher": "irodori",
   "description": "Qdrant Connector contributes the Qdrant database connector through the native connector ABI.",
   "license": "MIT OR 0BSD",
