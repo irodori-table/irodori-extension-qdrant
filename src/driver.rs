@@ -261,7 +261,7 @@ impl TlsConfig {
         let mut builder = Client::builder();
 
         if let Some(path) = &self.root_cert_path {
-            let pem = read_pem(path, "SSL root certificate")?;
+            let pem = abi::read_pem(path, "SSL root certificate")?;
             let bundle = reqwest::Certificate::from_pem_bundle(&pem)
                 .map_err(|err| format!("SSL root certificate at {path} is not valid PEM: {err}"))?;
             // `from_pem_bundle` answers Ok(vec![]) for a file with no PEM
@@ -282,11 +282,11 @@ impl TlsConfig {
         // files, which is how every other tool spells it, and join them here.
         match (&self.client_cert_path, &self.client_key_path) {
             (Some(cert_path), Some(key_path)) => {
-                let mut pem = read_pem(cert_path, "SSL client certificate")?;
+                let mut pem = abi::read_pem(cert_path, "SSL client certificate")?;
                 if !pem.ends_with(b"\n") {
                     pem.push(b'\n');
                 }
-                pem.extend_from_slice(&read_pem(key_path, "SSL client key")?);
+                pem.extend_from_slice(&abi::read_pem(key_path, "SSL client key")?);
                 builder = builder.identity(
                     reqwest::Identity::from_pem(&pem)
                         .map_err(|err| format!("SSL client identity is not usable: {err}"))?,
@@ -309,10 +309,6 @@ impl TlsConfig {
             .build()
             .map_err(|err| format!("TLS client setup failed: {err}"))
     }
-}
-
-fn read_pem(path: &str, label: &str) -> Result<Vec<u8>, String> {
-    std::fs::read(path).map_err(|err| format!("{label} at {path} could not be read: {err}"))
 }
 
 impl QdrantConfig {
@@ -343,15 +339,11 @@ impl QdrantConfig {
     }
 
     fn redact(&self, message: &str) -> String {
-        self.redaction_values.iter().fold(
-            message.replace(&self.base_url, "<qdrant-url>"),
-            |message, secret| {
-                if secret.is_empty() {
-                    message
-                } else {
-                    message.replace(secret, "****")
-                }
-            },
+        abi::redact_endpoint(
+            message,
+            &self.base_url,
+            "<qdrant-url>",
+            &self.redaction_values,
         )
     }
 }
